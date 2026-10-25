@@ -1,6 +1,7 @@
 export interface Usuario {
   id: string;
   nombre: string;
+  nombreUsuario: string;
   correo: string;
 }
 
@@ -14,14 +15,27 @@ async function obtenerRespuesta(
 }
 
 export async function ingresar(
-  correo: string,
+  identificador: string,
   clave: string,
 ): Promise<Usuario> {
   const respuesta = await fetch("/api/auth/login", {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ correo, clave }),
+    body: JSON.stringify({ identificador, clave }),
+  });
+  return (await obtenerRespuesta(respuesta)).usuario;
+}
+
+export async function registrar(
+  nombreUsuario: string,
+  clave: string,
+): Promise<Usuario> {
+  const respuesta = await fetch("/api/auth/registro", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombreUsuario, clave }),
   });
   return (await obtenerRespuesta(respuesta)).usuario;
 }

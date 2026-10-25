@@ -61,7 +61,7 @@ export default function Estructura({
             {menu && (
               <div className="menu-usuario">
                 <b>{usuario.nombre}</b>
-                <small>{usuario.correo}</small>
+                <small>{usuario.nombreUsuario || usuario.correo}</small>
                 <button
                   className="cerrar-sesion"
                   onClick={() =>

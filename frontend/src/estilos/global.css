@@ -796,6 +796,19 @@ tbody tr:hover {
   min-height: 40px;
   font-size: 14px;
 }
+.alternar-login {
+  display: block;
+  width: 100%;
+  padding: 8px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--cian);
+  font-size: 12px;
+  text-align: center;
+}
+.alternar-login:hover {
+  text-decoration: underline;
+}
 .error-login {
   color: #ffb5bf;
   background: #4a2431;

@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from "react";
-import { Activity, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
-import { ingresar, type Usuario } from "../servicios/autenticacion";
+import { Activity, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
+import { ingresar, registrar, type Usuario } from "../servicios/autenticacion";
 
 export default function Login({
   alIngresar,
 }: {
   alIngresar: (usuario: Usuario) => void;
 }) {
-  const [correo, setCorreo] = useState("");
+  const [nombreUsuario, setNombreUsuario] = useState("");
   const [clave, setClave] = useState("");
+  const [registro, setRegistro] = useState(false);
   const [mostrarClave, setMostrarClave] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -18,7 +19,11 @@ export default function Login({
     setCargando(true);
     setError("");
     try {
-      alIngresar(await ingresar(correo.trim(), clave));
+      alIngresar(
+        registro
+          ? await registrar(nombreUsuario.trim(), clave)
+          : await ingresar(nombreUsuario.trim(), clave),
+      );
     } catch (fallo) {
       setError(
         fallo instanceof Error
@@ -44,22 +49,25 @@ export default function Login({
         <p className="etiqueta-login">SISTEMA DE MONITOREO</p>
         <h1 id="titulo-login">Control del Péndulo Invertido</h1>
         <p className="descripcion-login">
-          Ingresa tus credenciales para acceder al panel de control y las
-          mediciones.
+          {registro
+            ? "Crea tu cuenta para acceder al panel de control."
+            : "Ingresa con tu usuario y contraseña para continuar."}
         </p>
         <form onSubmit={enviar}>
-          <label htmlFor="correo-login">Correo electrónico</label>
+          <label htmlFor="usuario-login">Nombre de usuario</label>
           <div className="entrada-login">
-            <Mail size={18} />
+            <UserRound size={18} />
             <input
-              id="correo-login"
-              type="email"
+              id="usuario-login"
+              type="text"
               autoComplete="username"
-              placeholder="usuario@ejemplo.com"
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
+              placeholder={registro ? "Ejemplo: harold_01" : "Tu usuario o correo"}
+              value={nombreUsuario}
+              onChange={(e) => setNombreUsuario(e.target.value)}
               required
-              maxLength={254}
+              minLength={registro ? 3 : undefined}
+              maxLength={registro ? 30 : 254}
+              pattern={registro ? "[a-zA-Z0-9_]+" : undefined}
             />
           </div>
           <label htmlFor="clave-login">Contraseña</label>
@@ -73,6 +81,8 @@ export default function Login({
               value={clave}
               onChange={(e) => setClave(e.target.value)}
               required
+              minLength={registro ? 12 : undefined}
+              maxLength={200}
             />
             <button
               type="button"
@@ -94,9 +104,20 @@ export default function Login({
             type="submit"
             disabled={cargando}
           >
-            {cargando ? "Verificando..." : "Iniciar sesión"}
+            {cargando ? "Verificando..." : registro ? "Crear cuenta" : "Iniciar sesión"}
           </button>
         </form>
+        <button
+          className="alternar-login"
+          type="button"
+          onClick={() => {
+            setRegistro(!registro);
+            setError("");
+            setClave("");
+          }}
+        >
+          {registro ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate"}
+        </button>
         <p className="pie-login">
           Acceso autorizado · Control y monitoreo de laboratorio
         </p>
