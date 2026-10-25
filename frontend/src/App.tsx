@@ -6,6 +6,7 @@ import Historial from "./paginas/Historial";
 import { cargarMediciones, persistirMediciones } from "./servicios/mediciones";
 import { estadoDe, gananciasIniciales } from "./tipos/medicion";
 import type { Ganancias, Medicion, Punto } from "./tipos/medicion";
+import type { Usuario } from "./servicios/autenticacion";
 
 const INTERVALO = 100;
 function simular(t: number): Punto {
@@ -19,13 +20,21 @@ function simular(t: number): Punto {
     ),
   };
 }
-export default function App() {
+export default function App({
+  usuario,
+  cerrarSesion,
+}: {
+  usuario: Usuario;
+  cerrarSesion: () => Promise<void>;
+}) {
   const [pagina, setPagina] = useState<Pagina>("monitoreo");
   const [puntos, setPuntos] = useState<Punto[]>([]);
   const [midiendo, setMidiendo] = useState(false);
   const [puedeGuardar, setPuedeGuardar] = useState(false);
   const [ganancias, setGanancias] = useState<Ganancias>(gananciasIniciales);
-  const [mediciones, setMediciones] = useState<Medicion[]>(cargarMediciones);
+  const [mediciones, setMediciones] = useState<Medicion[]>(() =>
+    cargarMediciones(usuario.id),
+  );
   const completos = useRef<Punto[]>([]);
   const inicio = useRef<number | null>(null);
   const fecha = useRef("");
@@ -72,7 +81,7 @@ export default function App() {
     };
     try {
       const siguientes = [nuevo, ...mediciones];
-      persistirMediciones(siguientes);
+      persistirMediciones(usuario.id, siguientes);
       setMediciones(siguientes);
       setPuedeGuardar(false);
       window.alert("Medición guardada correctamente.");
@@ -85,7 +94,7 @@ export default function App() {
   function eliminar(id: string) {
     const siguientes = mediciones.filter((m) => m.id !== id);
     try {
-      persistirMediciones(siguientes);
+      persistirMediciones(usuario.id, siguientes);
       setMediciones(siguientes);
     } catch {
       window.alert("No se pudo actualizar el historial.");
@@ -96,7 +105,12 @@ export default function App() {
     setGanancias(g);
   }
   return (
-    <Estructura pagina={pagina} cambiar={setPagina}>
+    <Estructura
+      pagina={pagina}
+      cambiar={setPagina}
+      usuario={usuario}
+      cerrarSesion={cerrarSesion}
+    >
       {pagina === "monitoreo" ? (
         <Monitoreo
           puntos={puntos}
