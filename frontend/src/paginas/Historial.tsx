@@ -1,14 +1,215 @@
-import { useState } from 'react'
-import { ArrowLeft, CalendarDays, Download, Eye, History as IconHistory, Search, Trash2 } from 'lucide-react'
-import GraficaAngulo from '../componentes/GraficaAngulo'
-import { exportarPDF } from '../servicios/pdf'
-import { duracionTexto } from '../tipos/medicion'
-import type { Medicion } from '../tipos/medicion'
-export default function Historial({mediciones,eliminar,volver}:{mediciones:Medicion[];eliminar:(id:string)=>void;volver:()=>void}) {
- const [busqueda,setBusqueda]=useState('');const [fecha,setFecha]=useState('');const [seleccion,setSeleccion]=useState<string|null>(null)
- const visibles=mediciones.filter(m=>(`${new Date(m.fecha).toLocaleString('es-BO')} ${m.estado}`).toLowerCase().includes(busqueda.toLowerCase())&&(!fecha||new Date(m.fecha).toLocaleDateString('en-CA')===fecha))
- const actual=visibles.find(m=>m.id===seleccion)??visibles[0]
- function borrar(m:Medicion) {if(window.confirm('¿Eliminar esta medición?')) eliminar(m.id)}
- return <div><div className="cabecera-pagina"><div><h2>Historial</h2><p>Mediciones anteriores y resultados registrados</p></div><span className="contador">{mediciones.length} mediciones</span></div><div className="columnas-historial"><section className="tarjeta"><h3><IconHistory size={19}/> Mediciones anteriores</h3><div className="filtros"><label><Search size={17}/><input placeholder="Buscar medición..." value={busqueda} onChange={e=>setBusqueda(e.target.value)}/></label><label><CalendarDays size={17}/><input aria-label="Filtrar por fecha" type="date" value={fecha} onChange={e=>setFecha(e.target.value)}/></label></div><div className="scroll-tabla"><table><thead><tr><th>Fecha y hora</th><th>Duración</th><th>Ángulo máx.</th><th>Ganancias LQR</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>{visibles.map(m=><tr key={m.id} className={actual?.id===m.id?'fila-activa':''} onClick={()=>setSeleccion(m.id)}><td>{new Date(m.fecha).toLocaleString('es-BO')}</td><td>{duracionTexto(m.duracion)}</td><td>{m.anguloMaximo.toFixed(1)}°</td><td className="monoespaciado">[{Object.values(m.ganancias).map(v=>v.toFixed(1)).join(', ')}]</td><td><span className={`estado ${m.estado==='Estable'?'bien':m.estado==='Corrigiendo'?'alerta':'peligro'}`}>{m.estado}</span></td><td><div className="acciones-fila"><button title="Ver" aria-label="Ver" onClick={e=>{e.stopPropagation();setSeleccion(m.id)}}><Eye size={17}/></button><button title="Exportar PDF" aria-label="Exportar PDF" onClick={e=>{e.stopPropagation();exportarPDF(m)}}><Download size={17}/></button><button title="Eliminar" aria-label="Eliminar" onClick={e=>{e.stopPropagation();borrar(m)}}><Trash2 size={17}/></button></div></td></tr>)}</tbody></table>{visibles.length===0&&<p className="sin-datos">No se encontraron mediciones.</p>}</div></section>
- <section className="tarjeta vista-historial"><h3><Eye size={19}/> Vista previa de medición</h3>{actual?<><GraficaAngulo puntos={actual.puntos} altura={260}/><div className="detalle"><h4>Detalles de la medición seleccionada</h4><div className="detalles-grid"><div><small>Fecha y hora</small><strong>{new Date(actual.fecha).toLocaleString('es-BO')}</strong></div><div><small>Duración</small><strong>{duracionTexto(actual.duracion)}</strong></div><div><small>Ángulo máximo</small><strong>{actual.anguloMaximo.toFixed(2)}°</strong></div><div><small>Estado</small><strong>{actual.estado}</strong></div></div><h4>Ganancias LQR utilizadas</h4><div className="ganancias-historial">{Object.entries(actual.ganancias).map(([k,v])=><div key={k}><small>{k.toUpperCase()}</small><strong>{v.toFixed(2)}</strong></div>)}</div></div><div className="acciones-historial"><button className="boton secundario" onClick={volver}><ArrowLeft size={17}/>Ver medición actual</button><button className="boton principal" onClick={()=>exportarPDF(actual)}><Download size={17}/>Exportar PDF</button></div></>:<div className="sin-datos"><p>Guarda una medición para visualizarla aquí.</p><button className="boton principal" onClick={volver}>Ver medición actual</button></div>}</section></div></div>
+import { useState } from "react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Download,
+  Eye,
+  History as IconHistory,
+  Search,
+  Trash2,
+} from "lucide-react";
+import GraficaAngulo from "../componentes/GraficaAngulo";
+import { exportarPDF } from "../servicios/pdf";
+import { duracionTexto } from "../tipos/medicion";
+import type { Medicion } from "../tipos/medicion";
+export default function Historial({
+  mediciones,
+  eliminar,
+  volver,
+}: {
+  mediciones: Medicion[];
+  eliminar: (id: string) => void;
+  volver: () => void;
+}) {
+  const [busqueda, setBusqueda] = useState("");
+  const [fecha, setFecha] = useState("");
+  const [seleccion, setSeleccion] = useState<string | null>(null);
+  const visibles = mediciones.filter(
+    (m) =>
+      `${new Date(m.fecha).toLocaleString("es-BO")} ${m.estado}`
+        .toLowerCase()
+        .includes(busqueda.toLowerCase()) &&
+      (!fecha || new Date(m.fecha).toLocaleDateString("en-CA") === fecha),
+  );
+  const actual = visibles.find((m) => m.id === seleccion) ?? visibles[0];
+  function borrar(m: Medicion) {
+    if (window.confirm("¿Eliminar esta medición?")) eliminar(m.id);
+  }
+  return (
+    <div>
+      <div className="cabecera-pagina">
+        <div>
+          <h2>Historial</h2>
+          <p>Mediciones anteriores y resultados registrados</p>
+        </div>
+        <span className="contador">{mediciones.length} mediciones</span>
+      </div>
+      <div className="columnas-historial">
+        <section className="tarjeta">
+          <h3>
+            <IconHistory size={19} /> Mediciones anteriores
+          </h3>
+          <div className="filtros">
+            <label>
+              <Search size={17} />
+              <input
+                placeholder="Buscar medición..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
+            </label>
+            <label>
+              <CalendarDays size={17} />
+              <input
+                aria-label="Filtrar por fecha"
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="scroll-tabla">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha y hora</th>
+                  <th>Duración</th>
+                  <th>Ángulo máx.</th>
+                  <th>Ganancias LQR</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibles.map((m) => (
+                  <tr
+                    key={m.id}
+                    className={actual?.id === m.id ? "fila-activa" : ""}
+                    onClick={() => setSeleccion(m.id)}
+                  >
+                    <td>{new Date(m.fecha).toLocaleString("es-BO")}</td>
+                    <td>{duracionTexto(m.duracion)}</td>
+                    <td>{m.anguloMaximo.toFixed(1)}°</td>
+                    <td className="monoespaciado">
+                      [
+                      {Object.values(m.ganancias)
+                        .map((v) => v.toFixed(1))
+                        .join(", ")}
+                      ]
+                    </td>
+                    <td>
+                      <span
+                        className={`estado ${m.estado === "Estable" ? "bien" : m.estado === "Corrigiendo" ? "alerta" : "peligro"}`}
+                      >
+                        {m.estado}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="acciones-fila">
+                        <button
+                          title="Ver"
+                          aria-label="Ver"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSeleccion(m.id);
+                          }}
+                        >
+                          <Eye size={17} />
+                        </button>
+                        <button
+                          title="Exportar PDF"
+                          aria-label="Exportar PDF"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportarPDF(m);
+                          }}
+                        >
+                          <Download size={17} />
+                        </button>
+                        <button
+                          title="Eliminar"
+                          aria-label="Eliminar"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            borrar(m);
+                          }}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {visibles.length === 0 && (
+              <p className="sin-datos">No se encontraron mediciones.</p>
+            )}
+          </div>
+        </section>
+        <section className="tarjeta vista-historial">
+          <h3>
+            <Eye size={19} /> Vista previa de medición
+          </h3>
+          {actual ? (
+            <>
+              <GraficaAngulo puntos={actual.puntos} altura={260} />
+              <div className="detalle">
+                <h4>Detalles de la medición seleccionada</h4>
+                <div className="detalles-grid">
+                  <div>
+                    <small>Fecha y hora</small>
+                    <strong>
+                      {new Date(actual.fecha).toLocaleString("es-BO")}
+                    </strong>
+                  </div>
+                  <div>
+                    <small>Duración</small>
+                    <strong>{duracionTexto(actual.duracion)}</strong>
+                  </div>
+                  <div>
+                    <small>Ángulo máximo</small>
+                    <strong>{actual.anguloMaximo.toFixed(2)}°</strong>
+                  </div>
+                  <div>
+                    <small>Estado</small>
+                    <strong>{actual.estado}</strong>
+                  </div>
+                </div>
+                <h4>Ganancias LQR utilizadas</h4>
+                <div className="ganancias-historial">
+                  {Object.entries(actual.ganancias).map(([k, v]) => (
+                    <div key={k}>
+                      <small>{k.toUpperCase()}</small>
+                      <strong>{v.toFixed(2)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="acciones-historial">
+                <button className="boton secundario" onClick={volver}>
+                  <ArrowLeft size={17} />
+                  Ver medición actual
+                </button>
+                <button
+                  className="boton principal"
+                  onClick={() => exportarPDF(actual)}
+                >
+                  <Download size={17} />
+                  Exportar PDF
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="sin-datos">
+              <p>Guarda una medición para visualizarla aquí.</p>
+              <button className="boton principal" onClick={volver}>
+                Ver medición actual
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
 }
