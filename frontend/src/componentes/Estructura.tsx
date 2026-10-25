@@ -40,7 +40,6 @@ export default function Estructura({
             Historial
           </button>
         </nav>
-        <div className="pie-lateral">● Modo demostración</div>
       </aside>
       <div className="principal-layout">
         <header className="cabecera">
