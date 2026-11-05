@@ -4,6 +4,9 @@ import helmet from "helmet";
 import { configuracion } from "./configuracion.js";
 import { conectarBaseDatos, cerrarBaseDatos } from "./baseDatos.js";
 import { rutasAutenticacion } from "./rutasAutenticacion.js";
+import dns from "node:dns";
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const aplicacion = express();
 aplicacion.disable("x-powered-by");
